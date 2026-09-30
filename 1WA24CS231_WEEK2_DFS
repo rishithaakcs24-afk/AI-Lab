@@ -1,0 +1,74 @@
+def dfs(start, goal):
+
+    stack = [start]
+    visited = set()
+    parent = {}
+
+    while stack:
+
+        state = stack.pop()
+
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if state == goal:
+            path = []
+
+            while state != start:
+                path.append(state)
+                state = parent[state]
+
+            path.append(start)
+            path.reverse()
+
+            return path
+
+        pos = state.index('_')
+        row = pos // 3
+        col = pos % 3
+
+        moves = []
+
+        if row > 0:
+            moves.append(pos - 3)
+
+        if row < 2:
+            moves.append(pos + 3)
+
+        if col > 0:
+            moves.append(pos - 1)
+
+        if col < 2:
+            moves.append(pos + 1)
+
+        for new_pos in moves:
+
+            s = list(state)
+            s[pos], s[new_pos] = s[new_pos], s[pos]
+
+            new_state = ''.join(s)
+
+            if new_state not in visited:
+                parent[new_state] = state
+                stack.append(new_state)
+
+    return None
+
+
+start = input("Enter start state: ")
+goal = input("Enter goal state: ")
+
+solution = dfs(start, goal)
+
+if solution:
+    print("\nSolution found!")
+    print("Number of moves:", len(solution) - 1)
+
+    for state in solution:
+        print(state[:3])
+        print(state[3:6])
+        print(state[6:])
+        print()
+else:
+    print("No solution found.")
