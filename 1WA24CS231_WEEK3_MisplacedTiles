@@ -1,0 +1,95 @@
+#Misplaced Tiles
+import heapq
+
+def misplaced_tiles(state, goal):
+    count = 0
+
+    for i in range(9):
+        if state[i] != 0 and state[i] != goal[i]:
+            count += 1
+
+    return count
+
+
+def get_neighbors(state):
+    neighbors = []
+
+    zero = state.index(0)
+    row, col = divmod(zero, 3)
+
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    for dr, dc in moves:
+        r = row + dr
+        c = col + dc
+
+        if 0 <= r < 3 and 0 <= c < 3:
+            new_zero = r * 3 + c
+
+            new_state = list(state)
+            new_state[zero], new_state[new_zero] = \
+                new_state[new_zero], new_state[zero]
+
+            neighbors.append(tuple(new_state))
+
+    return neighbors
+
+
+def a_star(start, goal):
+    # (f, g, state, path)
+    pq = []
+
+    h = misplaced_tiles(start, goal)
+    heapq.heappush(pq, (h, 0, start, [start]))
+
+    visited = set()
+
+    while pq:
+        f, g, state, path = heapq.heappop(pq)
+
+        if state in visited:
+            continue
+
+        visited.add(state)
+
+        if state == goal:
+            return path
+
+        for neighbor in get_neighbors(state):
+            if neighbor not in visited:
+
+                new_g = g + 1
+                new_h = misplaced_tiles(neighbor, goal)
+
+                # f(n) = g(n) + h(n)
+                new_f = new_g + new_h
+
+                heapq.heappush(
+                    pq,
+                    (new_f, new_g, neighbor, path + [neighbor])
+                )
+
+    return None
+
+
+def display(state):
+    print(state[0:3])
+    print(state[3:6])
+    print(state[6:9])
+    print()
+
+
+# Input
+start = tuple(map(int, input("Enter initial state: ").split()))
+goal = tuple(map(int, input("Enter goal state: ").split()))
+
+path = a_star(start, goal)
+
+if path:
+    print("\nSolution:")
+    for state in path:
+        display(state)
+
+    print("Depth:", len(path) - 1)
+else:
+    print("No solution")
