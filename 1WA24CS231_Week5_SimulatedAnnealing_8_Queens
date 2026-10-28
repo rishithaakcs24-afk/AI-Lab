@@ -1,0 +1,28 @@
+import random, math
+
+def h(s):
+    return sum(s[i] == s[j] or abs(s[i] - s[j]) == j - i
+               for i in range(len(s)) for j in range(i + 1, len(s)))
+
+def simulated_annealing(n=8, T=100.0, cooling=0.995, T_min=1e-4):
+    s = [random.randrange(n) for _ in range(n)]
+    cur = h(s)
+    while T > T_min and cur > 0:
+        c, r = random.randrange(n), random.randrange(n)  
+        if r == s[c]:
+            continue
+        new = s[:c] + [r] + s[c+1:]
+        delta = h(new) - cur
+        if delta < 0 or random.random() < math.exp(-delta / T):
+            s, cur = new, cur + delta                     
+        T *= cooling
+    return s, cur
+
+while True:                                             
+    sol, cost = simulated_annealing()
+    if cost == 0:
+        break
+
+print(sol)
+for r in range(8):
+    print(" ".join("Q" if sol[c] == r else "." for c in range(8)))
