@@ -1,0 +1,29 @@
+import random
+
+def h(s):
+    return sum(s[i] == s[j] or abs(s[i] - s[j]) == j - i
+               for i in range(len(s)) for j in range(i + 1, len(s)))
+
+def hill_climb(n):
+    s = [random.randrange(n) for _ in range(n)]
+    while True:
+        cur = h(s)
+        if cur == 0:
+            return s
+        moves = [(h(s[:c] + [r] + s[c+1:]), c, r)
+                 for c in range(n) for r in range(n) if r != s[c]]
+        best = min(moves)[0]
+        if best >= cur:                      # stuck: random restart
+            s = [random.randrange(n) for _ in range(n)]
+            continue
+        _, c, r = random.choice([m for m in moves if m[0] == best])
+        s[c] = r
+
+n = int(input("N: "))
+if n in (2, 3):
+    print("No solution")
+else:
+    sol = hill_climb(n)
+    print(sol)
+    for r in range(n):
+        print(" ".join("Q" if sol[c] == r else "." for c in range(n)))
