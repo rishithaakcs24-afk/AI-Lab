@@ -1,0 +1,121 @@
+from itertools import product
+
+# Function to check entailment
+def entails(kb, query, symbols):
+
+    print("\nTRUTH TABLE")
+    print("-" * 65)
+    print("P Q R | Q->P | P->~Q | QvR | KB | Query")
+    print("-" * 65)
+
+    models = []
+    counterexamples = []
+
+    # Generate all truth assignments
+    for values in product([False, True],
+                          repeat=len(symbols)):
+
+        m = dict(zip(symbols, values))
+
+        # Evaluate individual KB sentences
+        s1 = (not m['Q'] or m['P'])
+        s2 = (not m['P'] or not m['Q'])
+        s3 = (m['Q'] or m['R'])
+
+        # Evaluate complete KB
+        kb_value = kb(m)
+
+        # Evaluate query
+        query_value = query(m)
+
+        # Display truth table
+        def tf(value):
+            return "T" if value else "F"
+
+        print(
+            tf(m['P']), tf(m['Q']), tf(m['R']), "|",
+            "  ", tf(s1), " |",
+            "   ", tf(s2), " |",
+            " ", tf(s3), " |",
+            tf(kb_value), " |",
+            tf(query_value)
+        )
+
+        # Store models satisfying KB
+        if kb_value:
+            models.append(m)
+
+            if not query_value:
+                counterexamples.append(m)
+
+    # Display models
+    print("\nMODELS WHERE KB IS TRUE:")
+
+    if models:
+        for m in models:
+            print(m)
+    else:
+        print("No models found.")
+
+    # Display entailment result
+    print("\nENTAILMENT RESULT")
+    print("-" * 40)
+
+    if counterexamples:
+        print("KB DOES NOT ENTAIL THE QUERY.")
+        print("Reason: A counterexample exists.")
+        for m in counterexamples:
+            print("KB = True, Query = False at:", m)
+    else:
+        print("KB ENTAILS THE QUERY.")
+        print("Reason: Query is TRUE in every model")
+        print("where KB is TRUE.")
+
+
+# Knowledge Base:
+# Q -> P
+# P -> NOT Q
+# Q OR R
+
+def knowledge_base(m):
+    return ((not m['Q'] or m['P']) and
+            (not m['P'] or not m['Q']) and
+            (m['Q'] or m['R']))
+
+
+# Get query from user
+print("KNOWLEDGE BASE:")
+print("1. Q -> P")
+print("2. P -> NOT Q")
+print("3. Q OR R")
+
+print("\nSelect a query:")
+print("1. R")
+print("2. R -> P")
+print("3. Q -> R")
+
+choice = input("\nEnter your choice (1/2/3): ")
+
+if choice == '1':
+    def query(m):
+        return m['R']
+    print("\nQUERY: R")
+
+elif choice == '2':
+    def query(m):
+        return not m['R'] or m['P']
+    print("\nQUERY: R -> P")
+
+elif choice == '3':
+    def query(m):
+        return not m['Q'] or m['R']
+    print("\nQUERY: Q -> R")
+
+else:
+    print("Invalid choice!")
+    exit()
+
+symbols = ['P', 'Q', 'R']
+
+# Check whether KB entails the selected query
+entails(knowledge_base, query, symbols)
